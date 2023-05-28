@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Content-Language" content="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>HTML 5 Template</title>
+
+    <link rel="icon" href="favicon.png" type="image/png" sizes="32x32"/>
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <script type="module" src="js/demofire.js">
+
+    </script>
+  </head>
+  <body>
+	
+    <div>
+        <exp-demofire-comp id="demofire">
+
+        </exp-demofire-comp>
+    </div>
+
+  </body>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() 
+      {
+        let dfire = document.getElementById("demofire");
+        dfire.startFire();
+        
+      });
+
+  </script>
+</html>
