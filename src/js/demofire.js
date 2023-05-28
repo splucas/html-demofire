@@ -42,7 +42,7 @@ class FillRectRenderer
         }
         let white = 'rgb(255,255,255)';
         
-        for(; palNdx < palette.length; palNdx ++)
+        for(; palNdx < palette.length; ++palNdx )
         {
             palette[palNdx] = white
         }
@@ -54,7 +54,7 @@ class FillRectRenderer
         let palette = this.palette;
         let ctx = this.context2d;
         let pixSize = 4;
-        for(let ycnt = 0; ycnt < buffHeight-2; ycnt ++)
+        for(let ycnt = 0; ycnt < buffHeight-4; ycnt ++)
         {
             for (let xcnt = 0; xcnt< buffWidth; xcnt ++) 
             {
@@ -81,8 +81,6 @@ class ImageDataRenderer
         this.canvasWidth = canvas.width;
         this.canvasHeight = canvas.height;
         this.palette = this.getPalette();
-
-        console.log(this.canvasHeight, this.canvasWidth)
 
         let idNdx = 0
         let imgData = this.imageData.data;
@@ -115,7 +113,7 @@ class ImageDataRenderer
         let palette = this.palette;
         let imdNdx = 0;
 
-        for(var ycnt = 0; ycnt < this.canvasHeight; ycnt ++)
+        for(var ycnt = 0; ycnt < this.canvasHeight-16; ycnt ++)
         {
             for(var xcnt = 0; xcnt < this.canvasWidth; xcnt++)
             {
@@ -136,7 +134,7 @@ class ImageDataRenderer
     
         }
         
-        this.context2d.putImageData(imgData, 0, 0);
+        this.context2d.putImageData(imgData, 0, 16);
     }
 }
 
