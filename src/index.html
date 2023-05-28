@@ -17,7 +17,10 @@
     </script>
   </head>
   <body>
-	
+    <div>
+      <button onclick="controlFire('start')">Start Fire</button>
+      <button onclick="controlFire('stop')">Stop Fire</button>
+    </div>
     <div>
         <exp-demofire-comp id="demofire">
 
@@ -27,6 +30,14 @@
   </body>
 
   <script>
+    function controlFire(act)
+    {
+      let dfire = document.getElementById("demofire")
+      if(act == "start")
+        dfire.startFire();
+      else
+        dfire.stopFire();
+    }
     document.addEventListener('DOMContentLoaded', function() 
       {
         let dfire = document.getElementById("demofire");
