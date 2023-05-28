@@ -13,8 +13,8 @@ export class DemoFire extends HTMLElement
 
         this.pixelSize = 4; 
         
-        this.fireBufferWidth = this.width / this.pixelSize;
-        this.fireBufferHeight = this.height / this.pixelSize;
+        this.fireBufferWidth = Math.floor(this.width / this.pixelSize);
+        this.fireBufferHeight = Math.floor(this.height / this.pixelSize);
 
         this.frameBuffer = new Array(this.fireBufferHeight*this.fireBufferWidth).fill(0)
         this.preFrameBuffer = new Array(this.fireBufferHeight*this.fireBufferWidth).fill(0)
@@ -28,6 +28,8 @@ export class DemoFire extends HTMLElement
 
         this.isRunning = false;
         this.triggerStop = false;
+
+        this.palette = getPalette();
         
     }
 
@@ -49,26 +51,92 @@ export class DemoFire extends HTMLElement
     }
     startFire()
     {
+        // Don't restart it if already running...
+        if(this.isRunning || this.triggerStop) return;
+
         this.resetFire();
         let canvas = this.shadowRoot.querySelector("#demofirecanvas");
         this.context2d = canvas.getContext("2d");
         this.isRunning = true;
-        this.runBurnFrame();
-        console.log("Fire Started");
-        console.log(getPalette());
+        this.triggerStop = false;
+        this.runBurnFrame(0);
     }
 
     stopFire()
     {
-        this.isRunning = false;
-        console.log("Fire Stopped");
+        this.triggerStop = true;
     }
 
-    runBurnFrame()
+    runBurnFrame(stopFrames)
     {
-
+        this.drawFrame();
+        if(this.triggerStop)
+        {
+            stopFrames += 1;
+            if(stopFrames > 60)
+            {
+                this.isRunning = false;
+                this.triggerStop = false;
+            }
+        }
         if(this.isRunning)
-            requestAnimationFrame(()=>this.runBurnFrame());
+            requestAnimationFrame(()=>this.runBurnFrame(stopFrames));
+    }
+
+    drawFrame()
+    {
+        let fbWidth     = this.fireBufferWidth;
+        let fbHeight    = this.fireBufferHeight;
+        let fBuffer     = this.frameBuffer;
+        let pfBuffer    = this.preFrameBuffer;
+
+        var ndx = 0;
+        for(ndx = fbWidth + 1; ndx < (fbHeight - 1) * fbWidth - 1; ndx++) 
+        {
+            /* Average the eight neighbours. */
+            let sum = pfBuffer[ndx - fbWidth - 1] 
+                    + pfBuffer[ndx - fbWidth    ] 
+                    + pfBuffer[ndx - fbWidth + 1] 
+                    + pfBuffer[ndx - 1] 
+                    + pfBuffer[ndx + 1] 
+                    + pfBuffer[ndx + fbWidth - 1] 
+                    + pfBuffer[ndx + fbWidth    ] 
+                    + pfBuffer[ndx + fbWidth + 1];
+                    
+            let avg = Math.floor(sum / 8);
+
+            if (!(sum & 3) && (avg > 0 || ndx >= (fbHeight - 4) * fbWidth)) 
+            {
+                    avg--;
+            }
+
+            if(!this.triggerStop)
+                if(avg < 0) avg = 200;
+
+            fBuffer[ndx] = avg;
+        }
+
+        for(ndx = 0; ndx < (fbHeight - 2) * fbWidth; ndx++) 
+        {
+            pfBuffer[ndx] = fBuffer[ndx + fbWidth];
+        }
+
+        let palette = this.palette;
+        let ctx = this.context2d;
+        let pixSize = this.pixelSize;
+        for(let ycnt = 0; ycnt < fbHeight-2; ycnt ++)
+        {
+            for (let xcnt = 0; xcnt< fbWidth; xcnt ++) 
+            {
+                let bndx = ycnt * fbWidth + xcnt;
+                var col = palette[fBuffer[bndx]];
+                
+                ctx.beginPath();
+                ctx.rect(xcnt * pixSize, ycnt * pixSize, pixSize, pixSize)
+                ctx.fillStyle = col;
+                ctx.fill();
+            }
+        }        
     }
 
 }
