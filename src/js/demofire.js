@@ -4,9 +4,15 @@ class FillRectRenderer
     // Uses the context2d.rect / fill methods to drawn on the context
     // Ultimately, this also means we must create a palette containing RGB data
 
-    constructor()
+    constructor(canvas)
     {
+        this.context2d = canvas.getContext("2d");
+        
         this.palette = this.getPalette()
+        this.width = canvas.width;
+        this.height = canvas.height;
+
+     
     }
 
     getPalette()
@@ -18,40 +24,35 @@ class FillRectRenderer
             g = g * 4;
             return `rgb(${r.toString()},${g.toString()},${b.toString()})`;
         }
-        var W = C(63,63,63);
-        let palette = [
-        C( 0,   0,   0), C( 0,   1,   1), C( 0,   4,   5), C( 0,   7,   9),
-        C( 0,   8,  11), C( 0,   9,  12), C(15,   6,   8), C(25,   4,   4),
-        C(33,   3,   3), C(40,   2,   2), C(48,   2,   2), C(55,   1,   1),
-        C(63,   0,   0), C(63,   0,   0), C(63,   3,   0), C(63,   7,   0),
-        C(63,  10,   0), C(63,  13,   0), C(63,  16,   0), C(63,  20,   0),
-        C(63,  23,   0), C(63,  26,   0), C(63,  29,   0), C(63,  33,   0),
-        C(63,  36,   0), C(63,  39,   0), C(63,  39,   0), C(63,  40,   0),
-        C(63,  40,   0), C(63,  41,   0), C(63,  42,   0), C(63,  42,   0),
-        C(63,  43,   0), C(63,  44,   0), C(63,  44,   0), C(63,  45,   0),
-        C(63,  45,   0), C(63,  46,   0), C(63,  47,   0), C(63,  47,   0),
-        C(63,  48,   0), C(63,  49,   0), C(63,  49,   0), C(63,  50,   0),
-        C(63,  51,   0), C(63,  51,   0), C(63,  52,   0), C(63,  53,   0),
-        C(63,  53,   0), C(63,  54,   0), C(63,  55,   0), C(63,  55,   0),
-        C(63,  56,   0), C(63,  57,   0), C(63,  57,   0), C(63,  58,   0),
-        C(63,  58,   0), C(63,  59,   0), C(63,  60,   0), C(63,  60,   0),
-        C(63,  61,   0), C(63,  62,   0), C(63,  62,   0), C(63,  63,   0),
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W,
-        W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W, W]; 
+
         
+        let pal = getDemoPalette();
+        let palette = new Array(256);
+        let ndx = 0;
+        console.log(pal.length)
+        let palNdx = 0;
+        for(; ndx < pal.length; ndx += 3)
+        {
+            let newrgb = C(  pal[ndx],
+                             pal[ndx + 1],
+                             pal[ndx + 2]  )
+
+            palette[palNdx] = newrgb;
+            palNdx += 1;
+        }
+        let white = 'rgb(255,255,255)';
+        
+        for(; palNdx < palette.length; palNdx ++)
+        {
+            palette[palNdx] = white
+        }
         return palette;            
     }
 
-    render(context, buffer, buffWidth, buffHeight)
+    render( buffer, buffWidth, buffHeight)
     {
         let palette = this.palette;
-        let ctx = context;
+        let ctx = this.context2d;
         let pixSize = 4;
         for(let ycnt = 0; ycnt < buffHeight-2; ycnt ++)
         {
@@ -70,6 +71,74 @@ class FillRectRenderer
 }
 
 
+class ImageDataRenderer
+{
+    // Render an image data structure
+    constructor(canvas)
+    {
+        this.context2d = canvas.getContext("2d");
+        this.imageData = this.context2d.createImageData(canvas.width, canvas.height );
+        this.canvasWidth = canvas.width;
+        this.canvasHeight = canvas.height;
+        this.palette = this.getPalette();
+
+        console.log(this.canvasHeight, this.canvasWidth)
+
+        let idNdx = 0
+        let imgData = this.imageData.data;
+        for(let ndx = 0; ndx < canvas.width * canvas.height; ndx ++)
+        {
+            imgData[idNdx ]    = 0;
+            imgData[idNdx + 1] = 0;
+            imgData[idNdx + 2] = 0;
+            imgData[idNdx + 3] = 255;
+            idNdx += 4;
+        }
+    }
+    getPalette()
+    {
+        let pal = getDemoPalette();
+        let palette = new Array(256*3);
+        let ndx = 0;
+        for(; ndx < pal.length; ndx ++)
+            palette[ndx] = pal[ndx] * 4;
+        
+        for(; ndx < palette.length; ++ndx)
+            palette[ndx] = 255;
+
+        return palette;            
+
+    }
+    render( buffer, buffWidth, buffHeight)
+    {
+        let imgData = this.imageData;
+        let palette = this.palette;
+        let imdNdx = 0;
+
+        for(var ycnt = 0; ycnt < this.canvasHeight; ycnt ++)
+        {
+            for(var xcnt = 0; xcnt < this.canvasWidth; xcnt++)
+            {
+
+                let bndx = Math.floor(ycnt / 4) * buffWidth + Math.floor(xcnt / 4);
+                let buffLookup = buffer[ bndx ];
+                let r =  palette[buffLookup*3];
+                let g = palette[buffLookup*3 + 1];
+                let b = palette[buffLookup*3 + 2];
+                
+                imgData.data[imdNdx]     = r;
+                imgData.data[imdNdx + 1] = g;
+                imgData.data[imdNdx + 2] = b;
+                imgData.data[imdNdx + 3] = 255;
+                
+                imdNdx += 4;
+            }
+    
+        }
+        
+        this.context2d.putImageData(imgData, 0, 0);
+    }
+}
 
 
 /* 
@@ -104,7 +173,8 @@ export class DemoFire extends HTMLElement
         this.triggerStop = false;
 
         this.renderer = null;
-        this.renderClass = FillRectRenderer;
+        this.renderClass = ImageDataRenderer;
+        //this.renderClass = FillRectRenderer;
         
     }
 
@@ -129,12 +199,14 @@ export class DemoFire extends HTMLElement
         // Don't restart it if already running...
         if(this.isRunning || this.triggerStop) return;
 
-        if(this.renderer == null)
-            this.renderer = new this.renderClass();
 
         this.resetFire();
         let canvas = this.shadowRoot.querySelector("#demofirecanvas");
-        this.context2d = canvas.getContext("2d");
+
+
+        if(this.renderer == null)
+            this.renderer = new this.renderClass(canvas);
+
         this.isRunning = true;
         this.triggerStop = false;
         this.runBurnFrame(0);
@@ -199,11 +271,37 @@ export class DemoFire extends HTMLElement
             pfBuffer[ndx] = fBuffer[ndx + fbWidth];
         }
 
-        this.renderer.render(this.context2d, pfBuffer, fbWidth, fbHeight);
+        this.renderer.render( pfBuffer, fbWidth, fbHeight);
     }
 
 }
 
 customElements.define("exp-demofire-comp", DemoFire);
+
+
+
+function getDemoPalette()
+{
+    let pal = [
+        0,   0,   0,   0,   1,   1,   0,   4,   5,   0,   7,   9,
+        0,   8,  11,   0,   9,  12,  15,   6,   8,  25,   4,   4,
+       33,   3,   3,  40,   2,   2,  48,   2,   2,  55,   1,   1,
+       63,   0,   0,  63,   0,   0,  63,   3,   0,  63,   7,   0,
+       63,  10,   0,  63,  13,   0,  63,  16,   0,  63,  20,   0,
+       63,  23,   0,  63,  26,   0,  63,  29,   0,  63,  33,   0,
+       63,  36,   0,  63,  39,   0,  63,  39,   0,  63,  40,   0,
+       63,  40,   0,  63,  41,   0,  63,  42,   0,  63,  42,   0,
+       63,  43,   0,  63,  44,   0,  63,  44,   0,  63,  45,   0,
+       63,  45,   0,  63,  46,   0,  63,  47,   0,  63,  47,   0,
+       63,  48,   0,  63,  49,   0,  63,  49,   0,  63,  50,   0,
+       63,  51,   0,  63,  51,   0,  63,  52,   0,  63,  53,   0,
+       63,  53,   0,  63,  54,   0,  63,  55,   0,  63,  55,   0,
+       63,  56,   0,  63,  57,   0,  63,  57,   0,  63,  58,   0,
+       63,  58,   0,  63,  59,   0,  63,  60,   0,  63,  60,   0,
+       63,  61,   0,  63,  62,   0,  63,  62,   0,  63,  63,   0];
+
+    return pal;
+
+}
 
 
